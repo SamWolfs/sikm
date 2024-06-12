@@ -1,0 +1,35 @@
+#+title: sik'm
+
+** Requirements
+
+- [[https://docs.docker.com/engine/install/][docker]] or [[https://podman.io/docs/installation][podman]]
+- [[https://helm.sh/docs/intro/install/][helm]]
+- [[https://github.com/google/go-jsonnet?tab=readme-ov-file#installation-instructions][jsonnet]]
+- [[https://github.com/jsonnet-bundler/jsonnet-bundler?tab=readme-ov-file#install][jsonnet-bundler]]
+- [[https://kind.sigs.k8s.io/docs/user/quick-start/#installation][kind]]
+- [[https://kubernetes.io/docs/tasks/tools/#kubectl][kubectl]]
+- [[https://tanka.dev/install/][tanka]]
+
+** Setup
+
+*** Cluster
+
+#+begin_src sh
+kind create cluster --config=kind/cluster.yaml
+
+# Install Ingress Controller
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+#+end_src
+
+*** Application
+
+#+begin_src sh
+helm install hipster-shop ./helm-chart
+#+end_src
+
+** Connecting to frontend
+
+#+begin_src sh
+kubectl port-forward deployment/frontend 8080:8080
+#+end_src
+

@@ -1,0 +1,78 @@
+#+title: Jsonnet
+
+** Description
+
+Jsonnet is a functional, domain-specific language (DSL) for describing configurations as JSON data. Jsonnet began as a "20% project" at Google and took inspiration from several other configuration languages used internally at Google.
+
+Jsonnet is a simple extension of JSON, providing a familiar syntax, while improving on some of JSON's shortcoming, such as:
+
+- Keys no longer require quotes
+- Comments and trailing commas are valid syntax
+- Multi-line string literals
+- Lazy evaluation allows maps to define values in terms of itself
+
+In addition to these improvements, Jsonnet also extends the JSON syntax with:
+
+- Side-effect free functions
+- Object-Orientation through the ~self~ keyword
+- String interpolation
+- Array and Object comprehensions
+- Translation to other configuration formats such as ~yaml~, ~toml~, ~ini~, ...
+
+These and many other features make Jsonnet a useful tool for creating abstractions and reducing duplication in configuration files.
+
+** Installation
+
+The Golang implementation of Jsonnet is currently the fastest feature-complete implementation of Jsonnet.
+
+- [[https://asdf-vm.com/guide/getting-started.html][Install asdf]]
+- [[https://github.com/asdf-community/asdf-golang][Install the asdf Golang plugin]]
+- [[https://github.com/google/go-jsonnet][Install Jsonnet]]
+
+** Tooling
+
+*** Formatter
+
+Jsonnet comes with a built-in formatter, but it has to be installed separately.
+
+**** Installation
+
+#+begin_src
+go install github.com/google/go-jsonnet/cmd/jsonnetfmt@latest
+#+end_src
+
+**** Usage
+
+#+begin_src sh
+jsonnetfmt -i <path/to/file.(libsonnet|jsonnet)>
+# Or for all files, excluding dependencies, in a project
+find -regextype posix-egrep -regex ".*\.(libsonnet|jsonnet)" -not -path "./vendor/*" -exec jsonnetfmt -i {} \;
+#+end_src
+
+*** Package Manager
+
+[[https://github.com/jsonnet-bundler/jsonnet-bundler][Jsonnet Bundler]] is an unofficial package manager for Jsonnet.
+
+**** Installation
+
+#+begin_src sh
+go install -a github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb@latest
+#+end_src
+
+**** Usage
+
+#+begin_src sh
+# Initialize repository as Jsonnet lib
+jb init
+
+# Install a Jsonnet library
+jb install https://github.com/author/lib
+#+end_src
+
+Installing a library using ~jb~ will place the library in the ~vendor~ directory at the root of your project. To include the library during compilation, run ~jsonnet~ with the ~-J vendor~ flag to include the dependencies in the Jsonnet path.
+
+## References
+
+- [Official Tutorial/Overview](https://jsonnet.org/learning/tutorial.html)
+- [Language Reference](https://jsonnet.org/ref/language.html)
+- [Standard Library](https://jsonnet.org/ref/stdlib.html)
