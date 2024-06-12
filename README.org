@@ -1,4 +1,4 @@
-#+title: sik'm
+#+title: sik'm — Structure and Interpretation of Kubernetes Manifests
 
 ** Requirements
 
@@ -14,11 +14,16 @@
 
 *** Cluster
 
+**** Create
+
 #+begin_src sh
 kind create cluster --config=kind/cluster.yaml
+#+end_src
 
-# Install Ingress Controller
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+**** Destroy
+
+#+begin_src sh
+kind delete cluster
 #+end_src
 
 *** Application
@@ -27,7 +32,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/mast
 helm install hipster-shop ./helm-chart
 #+end_src
 
-** Connecting to frontend
+*** Connecting to frontend
 
 #+begin_src sh
 kubectl port-forward deployment/frontend 8080:8080
