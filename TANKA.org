@@ -1,0 +1,173 @@
+#+title: Tanka
+
+** Infrastructure as +Code+ Data
+
+*** YAML
+
+| The Good                         | The Bad                                                                | The Ugly        |
+|----------------------------------+------------------------------------------------------------------------+-----------------|
+| Human-friendly syntax            | Boilerplate for more complex use-cases, e.g. CI/CD systems, Kubernetes | It's not *code* |
+| Expressive static configurations | No real utilities for creating abstractions                            |                 |
+| Superset of Json                 |                                                                        |                 |
+
+*** Helm
+
+| The Good                                                     | The Bad                                                              | The Ugly              |
+|--------------------------------------------------------------+----------------------------------------------------------------------+-----------------------|
+| "Solves" the abstraction problem through string substitution | String substitution is a pretty weak from of abstraction             | Still not *code*      |
+| Configuration and Distribution of Infrastructure definitions | Only possible to configure the chart, not change it                  | [[https://github.com/nats-io/k8s/blob/main/helm/charts/nats/templates/_helpers.tpl][Also this monstrosity]] |
+|                                                              | YAML is indentation based, but the template engine doesn't know that |                       |
+
+#+begin_quote
+At some point, we decided it was okay for us to template yaml. When did this happen? How is this acceptable? -- https://leebriggs.co.uk/blog/2019/02/07/why-are-we-templating-yaml
+#+end_quote
+
+**** Examples
+
+#+begin_src yaml
+# How to get a yaml object from your values file into your template
+kvs: {{ .Values.someKeysAndValues | toJson | toYaml }}
+
+# Conditionals
+{{- if .Values.sslEnabled }}
+- name: SERVER_PORT_SSL
+    value: {{ .Values.serverPortSsl | quote }}
+{{- else }}
+- name: SERVER_PORT
+    value: {{ .Values.serverPort | quote }}
+{{- end }}
+
+# Better hope your indentation doesn't change
+spec:
+  template:
+    spec:
+      {{- tpl (toYaml .Values.podAffinity) . | nindent 6 }}
+#+end_src
+
+** Infrastructure as Actual Code
+
+*** [[./JSONNET.org][Jsonnet]]
+
+| The Good                                                      | The Bad | The Ugly           |
+|---------------------------------------------------------------+---------+--------------------|
+| Turing-complete, small standard library                       |         | Lacking popularity |
+| It's pretty much Json, not a weird DSL                        |         |                    |
+| Libraries for Grafana/Prometheus and Kubernetes configuration |         |                    |
+
+#+begin_src jsonnet
+local templates = {
+  // Abstract template of a "sour" cocktail.
+  Sour: {
+    local drink = self,
+
+    // Hidden fields can be referred to
+    // and overridden, but do not appear
+    // in the JSON output.
+    citrus:: {
+      kind: 'Lemon Juice',
+      qty: 1,
+    },
+    sweetener:: {
+      kind: 'Simple Syrup',
+      qty: 0.5,
+    },
+
+    // A field that must be overridden.
+    spirit:: error 'Must override "spirit"',
+
+    ingredients: [
+      // Nested object, so refer to `drink` instead of `self`
+      { kind: drink.spirit, qty: 2 },
+      drink.citrus,
+      drink.sweetener,
+    ],
+    garnish: self.citrus.kind + ' twist',
+    served: 'Straight Up',
+  },
+};
+
+{
+  // The template requires us to override
+  // the 'spirit'.
+  'Whiskey Sour': templates.Sour {
+    spirit: 'Whiskey',
+  },
+
+  // Specialize it further.
+  'Deluxe Sour': self['Whiskey Sour'] {
+    // Don't replace the whole sweetener,
+    // just change 'kind' within it.
+    sweetener+: { kind: 'Gomme Syrup' },
+  },
+
+  Daiquiri: templates.Sour {
+    spirit: 'Banks 7 Rum',
+    citrus+: { kind: 'Lime' },
+    // Any field can be overridden.
+    garnish: 'Lime wedge',
+  },
+
+  "Nor'Easter": templates.Sour {
+    spirit: 'Whiskey',
+    citrus: { kind: 'Lime', qty: 0.5 },
+    sweetener+: { kind: 'Maple Syrup' },
+    // +: Can also add to a list.
+    ingredients+: [
+      { kind: 'Ginger Beer', qty: 1 },
+    ],
+  },
+}
+#+end_src
+
+*** Tanka
+
+- Uses ~Jsonnet~ to provide abstractions for generating Kubernetes manifests and reducing boilerplate
+- User-friendly APIs for deriving new Kubernetes objects from previously defined ones
+- Generated manifests can be piped directly into ~kubectl~
+- Easily create new abstractions for your project
+- Used by Grafana Labs to deploy Grafana/Loki for their commercial offerings
+
+#+begin_src jsonnet :jpaths '("vendor" "lib") :wrap src json
+local k = import "github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet";
+
+{
+  _config:: {
+    grafana: {
+      port: 3000,
+      name: "grafana",
+    },
+    prometheus: {
+      port: 9090,
+      name: "prometheus"
+    }
+  },
+
+  local deployment = k.apps.v1.deployment,
+  local container = k.core.v1.container,
+  local port = k.core.v1.containerPort,
+  local service = k.core.v1.service,
+
+  prometheus: {
+    deployment: deployment.new(
+      name=$._config.prometheus.name, replicas=1,
+      containers=[
+        container.new($._config.prometheus.name, "prom/prometheus")
+        + container.withPorts([port.new("api", $._config.prometheus.port)]),
+      ],
+    ),
+    service: k.util.serviceFor(self.deployment),
+  },
+  grafana: {
+    deployment: deployment.new(
+      name=$._config.grafana.name, replicas=1,
+      containers=[
+        container.new($._config.grafana.name, "grafana/grafana")
+        + container.withPorts([port.new("ui", $._config.grafana.port)]),
+      ],
+    ),
+    service:
+      k.util.serviceFor(self.deployment)
+      + service.mixin.spec.withType("NodePort"),
+  },
+}
+#+end_src
