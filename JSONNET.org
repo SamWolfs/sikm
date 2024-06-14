@@ -73,6 +73,6 @@ Installing a library using ~jb~ will place the library in the ~vendor~ directory
 
 ** References
 
-- [Official Tutorial/Overview](https://jsonnet.org/learning/tutorial.html)
-- [Language Reference](https://jsonnet.org/ref/language.html)
-- [Standard Library](https://jsonnet.org/ref/stdlib.html)
+- [[https://jsonnet.org/learning/tutorial.html][Official Tutorial/Overview]]
+- [[https://jsonnet.org/ref/language.html][Language Reference]]
+- [[https://jsonnet.org/ref/stdlib.html][Standard Library]]

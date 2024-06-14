@@ -51,10 +51,10 @@ spec:
 | The Good                                                      | The Bad | The Ugly           |
 |---------------------------------------------------------------+---------+--------------------|
 | Turing-complete, small standard library                       |         | Lacking popularity |
-| It's pretty much Json, not a weird DSL                        |         |                    |
+| It's pretty much Json, but better                             |         |                    |
 | Libraries for Grafana/Prometheus and Kubernetes configuration |         |                    |
 
-#+begin_src jsonnet
+#+begin_src jsonnet :wrap src json
 local templates = {
   // Abstract template of a "sour" cocktail.
   Sour: {
@@ -171,3 +171,9 @@ local k = import "github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet"
   },
 }
 #+end_src
+
+** References
+
+- [[https://grafana.com/blog/2020/01/09/introducing-tanka-our-way-of-deploying-to-kubernetes/][Introducing Tanka]]
+- [[https://tanka.dev/tutorial][Official Tutorial]]
+- [[https://jsonnet-libs.github.io/k8s-libsonnet/1.30][k8s-libsonnet Reference]]

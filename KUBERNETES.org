@@ -1,0 +1,27 @@
+#+title: Kubernetes
+
+** Basics
+
+#+ATTR_HTML: :width 1024px
+#+ATTR_HTML: :align center
+[[./assets/components-of-kubernetes.svg]]
+
+** API
+
+*** Access
+
+#+begin_src sh
+kubectl proxy --port=8080 &
+#+end_src
+
+#+begin_src sh :results raw :wrap src json
+curl -s localhost:8080/version
+#+end_src
+
+*** Create a deployment
+
+#+begin_src sh :results raw :wrap src json
+curl -s -X POST localhost:8080/apis/apps/v1/namespaces/default/deployments \
+    -H "Content-Type: application/json" \
+    -d "$(helm template test helm-chart -s templates/adservice.yaml | yq -o json)"
+#+end_src
