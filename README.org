@@ -1,5 +1,14 @@
 #+title: sik'm — Structure and Interpretation of Kubernetes Manifests
 
+#+CAPTION: A cartoon style image of a wolf, chasing a man wearing a T-shirt with the word "YAML" written on it. -- Microsoft Designer
+[[./assets/sikm.jpeg]]
+
+** Topics
+
+- The problem with Infrastructure as "Code"
+- Introduction to Jsonnet and Tanka
+- Hands-on Tanka feat. [[https://github.com/GoogleCloudPlatform/microservices-demo][Google Microservices Demo]]
+
 ** Requirements
 
 - [[https://docs.docker.com/engine/install/][docker]] or [[https://podman.io/docs/installation][podman]]
