@@ -127,6 +127,20 @@ local templates = {
 - Easily create new abstractions for your project
 - Used by Grafana Labs to deploy Grafana/Loki for their commercial offerings
 
+**** Important commands
+
+#+begin_src sh
+# Preview manifests
+tk show environments/default
+
+# Apply manifests to cluster with diff
+tk apply environments/default
+
+# Remove manifests from cluster
+tk delete environments/default
+#+end_src
+
+**** Example
 #+begin_src jsonnet :jpaths '("vendor" "lib") :wrap src json
 local k = import "github.com/grafana/jsonnet-libs/ksonnet-util/kausal.libsonnet";
 
